@@ -1,0 +1,69 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Represents an employee or admin",
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": "The login username"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["ADMIN", "EMPLOYEE", "OWNER"],
+          "description": "Role of the user"
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name"
+        },
+        "isActive": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string"
+        }
+      },
+      "required": ["username", "role", "name", "isActive", "createdAt", "updatedAt"]
+    },
+    "Ponche": {
+      "title": "Ponche",
+      "description": "Time clock record",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["ENTRADA", "SALIDA", "ALMUERZO_SALIDA", "ALMUERZO_RETORNO"]
+        },
+        "timestamp": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": ["userId", "type", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "User"
+      },
+      "description": "Stores user profiles"
+    },
+    "/ponches/{poncheId}": {
+      "schema": {
+        "$ref": "Ponche"
+      },
+      "description": "Stores time clock events"
+    }
+  }
+}

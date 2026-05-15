@@ -1,0 +1,16 @@
+{
+  "name": "Chronos ABC Kiosco",
+  "short_name": "Kiosco Asistencia",
+  "description": "Sistema de ponche para empleados.",
+  "start_url": "/kiosco",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

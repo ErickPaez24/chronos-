@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+.dark {
+  color-scheme: dark;
+}
+.dark body {
+  background-color: #171717;
+  color: #ededed;
+}
+.dark .bg-white {
+  background-color: #262626 !important;
+}
+.dark .bg-neutral-50 {
+  background-color: #171717 !important;
+}
+.dark .border-neutral-200, .dark .border-neutral-100 {
+  border-color: #404040 !important;
+}
+.dark .text-neutral-900, .dark .text-neutral-800 {
+  color: #ededed !important;
+}
+.dark .text-neutral-600, .dark .text-neutral-500 {
+  color: #a3a3a3 !important;
+}
+.dark .text-neutral-400 {
+  color: #737373 !important;
+}
+.dark .hover\:bg-neutral-50:hover {
+  background-color: #404040 !important;
+}
+.dark .bg-emerald-50 {
+  background-color: rgba(16, 185, 129, 0.1) !important;
+}
+.dark .text-emerald-700 {
+  color: #34d399 !important;
+}
+.dark .bg-rose-50 {
+  background-color: rgba(244, 63, 94, 0.1) !important;
+}
+.dark .text-rose-700 {
+  color: #fb7185 !important;
+}
+.dark .bg-indigo-50 {
+  background-color: rgba(99, 102, 241, 0.1) !important;
+}
+.dark .text-indigo-700 {
+  color: #818cf8 !important;
+}

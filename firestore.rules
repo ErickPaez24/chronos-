@@ -1,0 +1,81 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Primitives
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() { return request.auth != null; }
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+    
+    // Admin check
+    function isBootstrappedAdmin() {
+      // Allow the initial admin user using the specific email
+      return request.auth.token.email == 'admin@chronosabc.com';
+    }
+
+    function isAdmin() { 
+      return isSignedIn() && (isBootstrappedAdmin() || (exists(/databases/$(database)/documents/users/$(request.auth.uid)) 
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "ADMIN")); 
+    }
+
+    // Is Owner
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      function isValidUser(data) {
+        return data.keys().hasAll(['username', 'role', 'name', 'isActive', 'createdAt', 'updatedAt', 'hasBiometric'])
+            && (data.keys().size() == 7 || (data.keys().size() == 8 && 'usbFingerprint' in data.keys()))
+            && data.username is string && data.username.size() > 0 && data.username.size() <= 100
+            && data.role is string && (data.role == "ADMIN" || data.role == "EMPLOYEE")
+            && data.name is string && data.name.size() > 0 && data.name.size() <= 100
+            && data.isActive is bool
+            && data.hasBiometric is bool
+            && (!('usbFingerprint' in data.keys()) || data.usbFingerprint is string)
+            && data.createdAt is timestamp
+            && data.updatedAt is timestamp;
+      }
+
+      allow get: if isValidId(userId);
+      allow list: if true; 
+      
+      // Allow create only by admin
+      allow create: if isAdmin() && isValidId(userId) && isValidUser(incoming()) && incoming().createdAt == request.time && incoming().updatedAt == request.time;
+      
+      // Allow update by admin or self (for hasBiometric)
+      allow update: if (isAdmin() || isOwner(userId)) && isValidId(userId) && (incoming().updatedAt == request.time || !('updatedAt' in incoming().diff(existing()).affectedKeys()))
+                    && (incoming().diff(existing()).affectedKeys().hasOnly(['name', 'isActive', 'role', 'updatedAt', 'hasBiometric', 'usbFingerprint']));
+    }
+
+    // Ponches Collection
+    match /ponches/{poncheId} {
+      function isValidPonche(data) {
+        return data.keys().hasAll(['userId', 'type', 'timestamp'])
+            && data.keys().size() >= 3 && data.keys().size() <= 4
+            && data.userId is string && data.userId.size() <= 128
+            && data.type is string && (data.type == "ENTRADA" || data.type == "SALIDA" || data.type == "ALMUERZO_IN" || data.type == "ALMUERZO_OUT")
+            && data.timestamp is timestamp
+            && ( (!('notes' in data.keys())) || (data.notes is string && data.notes.size() <= 500) );
+      }
+
+      allow get: if true;
+      allow list: if true;
+      
+      // Anyone using the client app can punch their time (as the client authenticates via WebAuthn/PIN first)
+      allow create: if isValidId(poncheId) && isValidPonche(incoming()) 
+                    && incoming().timestamp == request.time;
+      
+      allow update: if false; // Ponches are immutable
+      allow delete: if false; // Cannot delete ponches
+    }
+  }
+}

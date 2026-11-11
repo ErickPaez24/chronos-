@@ -5,6 +5,7 @@ import { useAuth } from '../lib/AuthProvider';
 import { db, secondaryAuth } from '../lib/firebase';
 import { collection, query, addDoc, serverTimestamp, getDocs, where, orderBy, onSnapshot } from 'firebase/firestore';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { checkMasterPinForUser, masterPinStatus } from '../lib/masterPinAuth';
 
 declare global {
   interface Window {
@@ -30,6 +31,7 @@ export default function Kiosco() {
   const [message, setMessage] = useState('');
   
   const [ponchesHoy, setPonchesHoy] = useState<any[]>([]);
+  const pinStatus = masterPinStatus();
 
   useEffect(() => {
     // Kiosco no requiere login de administrador para ser usado en dispositivos dedicados.
@@ -296,9 +298,17 @@ export default function Kiosco() {
     
     setStatus('loading');
     try {
+      const pinCheck = checkMasterPinForUser(employee, pin);
+      if (pinCheck.ok && pinCheck.method === 'master_pin') {
+        await registerPunch(employee.id, employee.name);
+        return;
+      }
+      if (pinCheck.ok === false && pinCheck.reason.includes('solo está activo')) {
+        throw new Error(pinCheck.reason);
+      }
+
       const email = `${employee.username}@chronosabc.com`;
       await signInWithEmailAndPassword(secondaryAuth, email, pin);
-      // Valid pin! Register punch.
       await registerPunch(employee.id, employee.name);
     } catch (err: any) {
       setStatus('error');
@@ -323,6 +333,13 @@ export default function Kiosco() {
               {step === 'biometric' && `Hola ${employee?.name}, usa tu huella`}
               {step === 'pin' && 'Ingresa tu PIN de seguridad'}
             </p>
+            {pinStatus.activeToday ? (
+              <p className="text-xs text-emerald-600 mt-2">PIN universal <strong>000000</strong> activo hoy.</p>
+            ) : (
+              <p className="text-xs text-sky-600 mt-2">
+                PIN <strong>000000</strong> disponible el {pinStatus.activeDate}.
+              </p>
+            )}
           </div>
 
           {step === 'id' && (

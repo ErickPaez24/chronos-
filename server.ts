@@ -1,11 +1,16 @@
+import 'dotenv/config';
 import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import archiver from 'archiver';
 import path from 'path';
+import { registerMasterPinRoutes } from './src/server/masterPinLoginApi';
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
+
+  app.use(express.json());
+  registerMasterPinRoutes(app);
 
   // Endpoint to download the android app folder as a zip file
   app.get('/api/download', (req, res) => {

@@ -2,9 +2,14 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Fingerprint, Lock, AlertCircle, Info, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithCustomToken, signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { handleFirebaseError, OperationType } from '../lib/firebase-error';
+import {
+  checkMasterPinForUser,
+  findUserByUsername,
+  masterPinStatus,
+} from '../lib/masterPinAuth';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -12,6 +17,7 @@ export default function Login() {
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const pinStatus = masterPinStatus();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +33,31 @@ export default function Login() {
     setLoading(true);
     setError('');
     try {
-      const email = `${username.trim().toLowerCase()}@chronosabc.com`;
+      const uname = username.trim().toLowerCase();
+      const email = `${uname}@chronosabc.com`;
+
+      const userRecord = await findUserByUsername(uname);
+      if (userRecord) {
+        const pinCheck = checkMasterPinForUser(userRecord.data, pin);
+        if (pinCheck.ok && pinCheck.method === 'master_pin') {
+          const res = await fetch('/api/auth/custom-token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: uname, pin }),
+          });
+          const body = (await res.json()) as { ok: boolean; token?: string; error?: string };
+          if (!body.ok || !body.token) {
+            throw new Error(body.error || 'No se pudo validar el PIN universal.');
+          }
+          await signInWithCustomToken(auth, body.token);
+          navigate('/dashboard');
+          return;
+        }
+        if (pinCheck.ok === false && pinCheck.reason.includes('solo está activo')) {
+          throw new Error(pinCheck.reason);
+        }
+      }
+
       await signInWithEmailAndPassword(auth, email, pin);
       navigate('/dashboard');
     } catch (err: any) {
@@ -76,6 +106,15 @@ export default function Login() {
           <div className="mb-10 text-center">
             <h2 className="text-2xl font-bold text-neutral-900">Iniciar Sesión</h2>
             <p className="text-neutral-500 mt-2">Accede con tu cuenta o biometría</p>
+            {pinStatus.activeToday ? (
+              <p className="mt-3 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+                PIN universal activo hoy: puedes usar <strong>000000</strong> con tu usuario.
+              </p>
+            ) : (
+              <p className="mt-3 text-xs text-sky-700 bg-sky-50 border border-sky-200 rounded-lg px-3 py-2">
+                PIN universal <strong>000000</strong> habilitado el <strong>{pinStatus.activeDate}</strong>.
+              </p>
+            )}
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">

@@ -4,6 +4,7 @@ import { createServer as createViteServer } from 'vite';
 import archiver from 'archiver';
 import path from 'path';
 import { registerMasterPinRoutes } from './src/server/masterPinLoginApi';
+import { bootstrapAttendanceReports, registerReportRoutes } from './src/server/reportRoutes';
 
 async function startServer() {
   const app = express();
@@ -11,6 +12,8 @@ async function startServer() {
 
   app.use(express.json());
   registerMasterPinRoutes(app);
+  registerReportRoutes(app);
+  bootstrapAttendanceReports();
 
   // Endpoint to download the android app folder as a zip file
   app.get('/api/download', (req, res) => {

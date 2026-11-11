@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { 
   Users, TrendingUp, Download, LayoutDashboard, 
   Settings, LogOut, ChevronRight, Bell, Clock, UserCheck, UserX, FileText,
-  Fingerprint, Plus, X, AlertCircle
+  Fingerprint, Plus, X, AlertCircle, Mail, Loader2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/AuthProvider';
@@ -311,10 +311,11 @@ export default function Dashboard() {
 
           {activeTab === 'Empleados' && <EmpleadosTab />}
           {activeTab === 'Ponches' && <PonchesTab ponches={ponchesHoy} usuarios={usuarios} />}
+          {activeTab === 'Reporte Diario' && <ReporteDiarioTab />}
           {activeTab === 'Reporte Semanal' && <ReporteSemanalTab />}
           {activeTab === 'Configuración' && <ConfiguracionTab />}
 
-          {activeTab !== 'Dashboard' && activeTab !== 'Empleados' && activeTab !== 'Ponches' && activeTab !== 'Reporte Semanal' && activeTab !== 'Configuración' && (
+          {activeTab !== 'Dashboard' && activeTab !== 'Empleados' && activeTab !== 'Ponches' && activeTab !== 'Reporte Diario' && activeTab !== 'Reporte Semanal' && activeTab !== 'Configuración' && activeTab !== 'Reporte Mensual' && (
             <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-12 text-center">
               <h3 className="text-xl font-semibold mb-2">Módulo: {activeTab}</h3>
               <p className="text-neutral-500">Este módulo está en construcción. Próximamente disponible.</p>
@@ -999,6 +1000,91 @@ function ReporteSemanalTab() {
           }
         }
       `}</style>
+    </div>
+  );
+}
+
+function ReporteDiarioTab() {
+  const [sending, setSending] = useState(false);
+  const [notice, setNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [health, setHealth] = useState<{ smtpConfigured?: boolean; scheduler?: { cron?: string } } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/health')
+      .then((r) => r.json())
+      .then(setHealth)
+      .catch(() => setHealth(null));
+  }, []);
+
+  const sendReport = async () => {
+    setSending(true);
+    setNotice(null);
+    try {
+      const res = await fetch('/api/send-attendance-report', { method: 'POST' });
+      const data = (await res.json()) as {
+        ok: boolean;
+        message?: string;
+        error?: string;
+        summary?: { onTime: number; late: number; absent: number };
+      };
+      if (!data.ok) {
+        setNotice({ type: 'error', text: data.error || 'Error al enviar el reporte.' });
+        return;
+      }
+      const s = data.summary;
+      setNotice({
+        type: 'success',
+        text: `${data.message} Puntuales: ${s?.onTime ?? 0}, Tardanzas: ${s?.late ?? 0}, Ausentes: ${s?.absent ?? 0}.`,
+      });
+    } catch {
+      setNotice({ type: 'error', text: 'No se pudo conectar con el servidor. ¿Está ejecutándose npm run dev?' });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6 max-w-3xl">
+      <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden">
+        <div className="px-6 py-5 border-b border-neutral-100">
+          <h3 className="font-semibold text-lg text-neutral-900">Reporte de puntualidad por correo</h3>
+          <p className="text-sm text-neutral-500 mt-1">
+            Envío automático a las <strong>9:00 AM</strong> (cron: {health?.scheduler?.cron ?? '0 9 * * *'}) con empleados
+            puntuales, tardanzas y ausentes antes de las 9:00.
+          </p>
+        </div>
+        <div className="p-6 space-y-4">
+          {health?.smtpConfigured === false && (
+            <div className="flex items-center text-amber-800 bg-amber-50 border border-amber-200 p-3 rounded-lg text-sm">
+              <AlertCircle className="w-5 h-5 mr-2 shrink-0" />
+              Configura SMTP y REPORT_EMAIL_TO en el archivo <code className="mx-1">.env</code> del servidor.
+            </div>
+          )}
+          {notice && (
+            <div
+              className={`p-3 rounded-lg text-sm ${
+                notice.type === 'success'
+                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                  : 'bg-red-50 text-red-800 border border-red-200'
+              }`}
+            >
+              {notice.text}
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => void sendReport()}
+            disabled={sending}
+            className="inline-flex items-center justify-center px-5 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-medium rounded-xl transition-colors"
+          >
+            {sending ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <Mail className="w-5 h-5 mr-2" />}
+            Enviar Reporte de Puntualidad por Correo Ahora
+          </button>
+          <p className="text-xs text-neutral-500">
+            Hora límite puntual por defecto: 08:15 (<code>PUNCTUAL_TIME_LIMIT</code> en .env).
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

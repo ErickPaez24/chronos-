@@ -10,3 +10,4 @@ serviceAccountKey.json
 backup_ponches*.json
 preview_report*.html
 run_erick_test.ts
+pins_*.csv

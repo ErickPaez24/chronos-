@@ -6,3 +6,7 @@ coverage/
 *.log
 .env*
 !.env.example
+serviceAccountKey.json
+backup_ponches*.json
+preview_report*.html
+run_erick_test.ts

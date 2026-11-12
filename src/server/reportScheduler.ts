@@ -41,7 +41,7 @@ export function startReportScheduler(): void {
       void runScheduledReport();
     },
     {
-      timezone: process.env.REPORT_TIMEZONE?.trim() || "America/Port-au-Prince",
+      timezone: process.env.REPORT_TIMEZONE?.trim() || "America/Santo_Domingo",
     },
   );
 

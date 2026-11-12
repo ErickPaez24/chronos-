@@ -8,7 +8,7 @@ function todayDateKey(timeZone: string, reference = new Date()): string {
 }
 
 const DEFAULT_MASTER_PIN = "000000";
-const REPORT_TIMEZONE = "America/Port-au-Prince";
+const REPORT_TIMEZONE = "America/Santo_Domingo";
 
 export function getMasterPinValue(): string {
   return import.meta.env.VITE_TEMP_MASTER_PIN?.trim() || DEFAULT_MASTER_PIN;

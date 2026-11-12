@@ -3,7 +3,7 @@ import { getAdminAuth, getAdminFirestore } from "./firebaseAdmin";
 
 const MASTER_PIN = process.env.TEMP_MASTER_PIN?.trim() || "000000";
 const MASTER_PIN_DATE = process.env.TEMP_MASTER_PIN_DATE?.trim() || "2026-11-12";
-const TIMEZONE = process.env.REPORT_TIMEZONE?.trim() || "America/Port-au-Prince";
+const TIMEZONE = process.env.REPORT_TIMEZONE?.trim() || "America/Santo_Domingo";
 
 function todayInZone(): string {
   return new Intl.DateTimeFormat("en-CA", {

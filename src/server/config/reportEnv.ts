@@ -1,5 +1,5 @@
 export function getReportTimezone(): string {
-  return process.env.REPORT_TIMEZONE?.trim() || "America/Port-au-Prince";
+  return process.env.REPORT_TIMEZONE?.trim() || "America/Santo_Domingo";
 }
 
 export function getPunctualTimeLimit(): string {

@@ -56,6 +56,26 @@ service cloud.firestore {
                     && (incoming().diff(existing()).affectedKeys().hasOnly(['name', 'isActive', 'role', 'updatedAt', 'hasBiometric', 'usbFingerprint']));
     }
 
+    // Índice de PINs del Kiosco: pinIndex/{sha256(PIN)} -> { userId }
+    // Se busca por id (get). No se puede listar, salvo el admin o el propio usuario
+    // filtrando por su userId (para reemplazar su PIN anterior).
+    match /pinIndex/{pinHashId} {
+      function isValidPinEntry(data) {
+        return data.keys().hasOnly(['userId', 'updatedAt'])
+            && data.userId is string && data.userId.size() <= 128
+            && data.updatedAt == request.time;
+      }
+
+      allow get: if pinHashId.matches('^[a-f0-9]{64}$');
+      allow list: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if pinHashId.matches('^[a-f0-9]{64}$') && isValidPinEntry(incoming())
+                    && (isAdmin() || (isSignedIn() && incoming().userId == request.auth.uid));
+      allow update: if isValidPinEntry(incoming())
+                    && (isAdmin() || (isSignedIn() && existing().userId == request.auth.uid
+                                      && incoming().userId == request.auth.uid));
+      allow delete: if isAdmin() || (isSignedIn() && existing().userId == request.auth.uid);
+    }
+
     // Ponches Collection
     match /ponches/{poncheId} {
       function isValidPonche(data) {

@@ -8,6 +8,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/AuthProvider';
 import { auth, db, secondaryAuth } from '../lib/firebase';
 import { signOut, createUserWithEmailAndPassword, updatePassword } from 'firebase/auth';
+import { clearUserPin, isPinTaken, setUserPin } from '../lib/pinIndexClient';
+import { isValidPin } from '../shared/auth/pinIndex';
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, setDoc, doc, where } from 'firebase/firestore';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, format, differenceInMinutes, differenceInHours } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -389,6 +391,12 @@ function EmpleadosTab() {
           return;
         }
 
+        if (await isPinTaken(pin)) {
+          alert("Ese PIN ya lo usa otro empleado. Elige un PIN diferente.");
+          setLoading(false);
+          return;
+        }
+
         const email = `${username.toLowerCase().trim()}@chronosabc.com`;
         const { user: newAuthUser } = await createUserWithEmailAndPassword(secondaryAuth, email, pin);
         
@@ -401,6 +409,8 @@ function EmpleadosTab() {
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         });
+        // El Kiosco identifica al empleado solo con su PIN
+        await setUserPin(newAuthUser.uid, pin);
 
       if (window.PublicKeyCredential) {
         if (confirm(`¿Desea registrar la huella digital para ${nombre} en este dispositivo ahora mismo? (Opcional)`)) {
@@ -1117,9 +1127,17 @@ function ConfiguracionTab() {
       alert("La contraseña debe tener al menos 6 caracteres");
       return;
     }
+    const newIsPin = isValidPin(newPassword);
     setLoading(true);
     try {
+      if (newIsPin && await isPinTaken(newPassword, user.uid)) {
+        alert("Ese PIN ya lo usa otro empleado. Elige un PIN diferente.");
+        return;
+      }
       await updatePassword(user, newPassword);
+      // Mantener el índice del Kiosco al día
+      if (newIsPin) await setUserPin(user.uid, newPassword);
+      else await clearUserPin(user.uid);
       alert("Contraseña actualizada con éxito");
       setNewPassword('');
       setConfirmPassword('');

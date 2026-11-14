@@ -10,6 +10,7 @@
  *   npx tsx src/server/scripts/resetPins.ts --apply    # aplica los cambios
  *
  * Requiere FIREBASE_SERVICE_ACCOUNT_JSON o FIREBASE_SERVICE_ACCOUNT_PATH.
+ * También actualiza el índice pinIndex que usa el Kiosco.
  * Los PINs se guardan en pins_<fecha>.csv (ignorado por git). Entrégalos y borra el archivo.
  */
 import "dotenv/config";
@@ -18,6 +19,7 @@ import { writeFileSync } from "node:fs";
 import { FieldValue } from "firebase-admin/firestore";
 import { getAdminAuth, getAdminFirestore } from "../firebaseAdmin";
 import firebaseConfig from "../../../firebase-applet-config.json";
+import { PIN_INDEX_COLLECTION, pinHash } from "../../shared/auth/pinIndex";
 
 const APPLY = process.argv.includes("--apply");
 const DEACTIVATE = ["erlendy ceballos"];
@@ -60,6 +62,10 @@ async function verifyPin(email: string, pin: string): Promise<boolean> {
 
 async function main() {
   const db = getAdminFirestore();
+  const clearPins = async (uid: string) => {
+    const old = await db.collection(PIN_INDEX_COLLECTION).where("userId", "==", uid).get();
+    await Promise.all(old.docs.map((d) => d.ref.delete()));
+  };
   const auth = getAdminAuth();
   const snap = await db.collection("users").get();
   console.log(`${APPLY ? "APLICANDO" : "SIMULACIÓN (usa --apply)"} — ${snap.size} usuarios\n`);
@@ -81,6 +87,7 @@ async function main() {
       if (APPLY) {
         await auth.deleteUser(doc.id).catch((e) => console.warn(`  Auth: ${e.message}`));
         await doc.ref.delete();
+        await clearPins(doc.id);
       }
       continue;
     }
@@ -90,6 +97,7 @@ async function main() {
       console.log(`DESACTIVAR  ${data.name} (${username})`);
       if (APPLY) {
         await doc.ref.update({ isActive: false, updatedAt: FieldValue.serverTimestamp() });
+        await clearPins(doc.id);
         await auth.updateUser(doc.id, { disabled: true }).catch((e) => console.warn(`  Auth: ${e.message}`));
       }
       continue;
@@ -110,6 +118,9 @@ async function main() {
           await auth.createUser({ uid: doc.id, email, password: pin, displayName: String(data.name) });
         } else throw e;
       }
+      await clearPins(doc.id);
+      await db.collection(PIN_INDEX_COLLECTION).doc(await pinHash(pin))
+        .set({ userId: doc.id, updatedAt: FieldValue.serverTimestamp() });
       ok = await verifyPin(email, pin);
       if (!ok) failures++;
     }

@@ -119,7 +119,7 @@ export default function Kiosco() {
           <p className="text-4xl font-bold text-indigo-600 dark:text-indigo-400 mt-3 tabular-nums">
             {now.toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit' })}
           </p>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1 capitalize">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1 first-letter:uppercase">
             {now.toLocaleDateString('es-DO', { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>
         </div>

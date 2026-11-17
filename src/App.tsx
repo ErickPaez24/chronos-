@@ -4,6 +4,7 @@ import { AuthProvider } from './lib/AuthProvider';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Kiosco from './pages/Kiosco';
+import LectorAutomatico from './pages/LectorAutomatico';
 
 function App() {
   useEffect(() => {
@@ -20,6 +21,7 @@ function App() {
           <Route path="/" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/kiosco" element={<Kiosco />} />
+          <Route path="/lector" element={<LectorAutomatico />} />
         </Routes>
       </Router>
     </AuthProvider>

@@ -20,7 +20,10 @@ function App() {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/kiosco" element={<Kiosco />} />
+          {/* Kiosco = solo huella (lector USB 2Connect), sin teclado ni pantalla. */}
+          <Route path="/kiosco" element={<LectorAutomatico />} />
+          {/* Kiosco anterior (usuario + huella/PIN), para quien no tiene huella registrada. */}
+          <Route path="/kiosco-usuario" element={<Kiosco />} />
           <Route path="/lector" element={<LectorAutomatico />} />
         </Routes>
       </Router>

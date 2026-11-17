@@ -70,7 +70,25 @@ func loadConfig() (*Config, error) {
 		cfg.DeviceName = "lector2connect"
 	}
 	cfg.ServerURL = strings.TrimRight(strings.TrimSpace(cfg.ServerURL), "/")
+	if cfg.ReaderStartCommand == "" {
+		cfg.ReaderStartCommand = detectReaderService()
+	}
 	return cfg, nil
+}
+
+// Servicio del lector LIROX (el 2Connect es un Lirox LRU0808).
+var knownReaderServices = []string{
+	`C:\Program Files (x86)\LIROX\fp-browser-service.exe`,
+	`C:\Program Files\LIROX\fp-browser-service.exe`,
+}
+
+func detectReaderService() string {
+	for _, p := range knownReaderServices {
+		if st, err := os.Stat(p); err == nil && !st.IsDir() {
+			return p
+		}
+	}
+	return ""
 }
 
 func (c *Config) valid() error {

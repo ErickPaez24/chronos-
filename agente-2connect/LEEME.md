@@ -16,7 +16,8 @@ Descarga: [`dist/agente-2connect.exe`](dist/agente-2connect.exe)
 
 ## Instalación en la PC nueva (una sola vez)
 1. **Servidor:** en las variables del servidor Chronos debe existir `CLOCK_API_KEY` (una clave larga inventada por usted).
-2. **Driver 2Connect:** instale el driver y el servicio web del lector (el que abre `ws://127.0.0.1:21187`), el mismo que se usa para registrar huellas en el panel.
+2. **Servicio del lector:** el 2Connect es un **Lirox LRU0808**. Su servicio es `C:\Program Files (x86)\LIROX\fp-browser-service.exe`
+   (puerto `21187`). El agente lo detecta y **lo inicia él mismo** al encender la PC, aunque nadie inicie sesión.
 3. Copie `agente-2connect.exe` a la PC y haga doble clic:
    - Opción **1 – Configurar:** URL del servidor Chronos y la clave `CLOCK_API_KEY`.
    - Opción **2 – Probar el lector:** ponga el dedo; debe decir `RECONOCIDO: <nombre>`. (No registra ponche.)
@@ -26,9 +27,9 @@ Descarga: [`dist/agente-2connect.exe`](dist/agente-2connect.exe)
 ## Para que funcione “sin prender nada”
 - **BIOS:** active *Restore on AC Power Loss = Power On* (o *After Power Failure = On*). Así, si se va la luz, la PC enciende sola.
 - El instalador ya desactiva la suspensión de Windows (el monitor sí puede apagarse).
-- Si el servicio web del 2Connect **no** es un servicio de Windows sino un programa con ícono en la barra de tareas,
-  active el **inicio de sesión automático** de Windows (`netplwiz` → desmarcar “Los usuarios deben escribir su nombre…”)
-  y deje ese programa en Inicio. También puede poner su ruta en `readerStartCommand` del `config.json`.
+- `fp-browser-service.exe` de LIROX solo arranca al iniciar sesión; el agente lo levanta solo si no está corriendo
+  (ruta configurable en `readerStartCommand` del `config.json`). Si aun así no responde sin sesión, active el
+  inicio de sesión automático de Windows (`netplwiz`).
 
 ## Registrar huellas de empleados
 Igual que antes: Panel → Empleados → Editar → **Lector USB 2Connect** (desde una PC con el lector y el servicio).

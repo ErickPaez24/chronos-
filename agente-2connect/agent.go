@@ -235,9 +235,11 @@ func runAgent() {
 			if failures == 1 || failures%60 == 0 {
 				logf("No se puede conectar al servicio del lector 2Connect (%s): %v", cfg.ReaderURL, err)
 			}
-			if failures == 3 && cfg.ReaderStartCommand != "" {
-				logf("Intentando iniciar el servicio 2Connect: %s", cfg.ReaderStartCommand)
-				_ = startDetached(cfg.ReaderStartCommand)
+			if (failures == 1 || failures%60 == 0) && cfg.ReaderStartCommand != "" {
+				logf("Iniciando el servicio del lector: %s", cfg.ReaderStartCommand)
+				if err := startDetached(cfg.ReaderStartCommand); err != nil {
+					logf("No se pudo iniciar el servicio del lector: %v", err)
+				}
 			}
 			time.Sleep(5 * time.Second)
 			continue
@@ -322,9 +324,16 @@ func statusHandler(st *state) http.Handler {
 	})
 }
 
+// startDetached lanza el servicio del lector (p. ej. fp-browser-service.exe de LIROX),
+// que normalmente solo arranca al iniciar sesión. Así funciona sin sesión abierta.
 func startDetached(command string) error {
-	c := exec.Command("cmd", "/C", "start", "", command)
-	return c.Start()
+	c := exec.Command(command)
+	c.Dir = filepath.Dir(command)
+	if err := c.Start(); err != nil {
+		return err
+	}
+	go func() { _ = c.Wait() }()
+	return nil
 }
 
 // ---------- Modo prueba ----------

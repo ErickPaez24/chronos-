@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, limit, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { handleFirebaseError, OperationType } from './firebase-error';
 
@@ -18,28 +18,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Bootstrap Admin user if not exists
+    // Bootstrap Admin user only if not already present in Firestore
     const tryBootstrap = async () => {
       try {
-        await signInWithEmailAndPassword(auth, 'admin@chronosabc.com', '121517');
-      } catch (e: any) {
-        if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential') {
-          // Attempt to create it
-          try {
-            const userCredential = await createUserWithEmailAndPassword(auth, 'admin@chronosabc.com', '121517');
-            // Write to users collection
-            await setDoc(doc(db, 'users', userCredential.user.uid), {
+        if (auth.currentUser) return;
+
+        const existingAdmin = await getDocs(
+          query(collection(db, 'users'), where('username', '==', 'admin'), limit(1))
+        );
+        if (!existingAdmin.empty) return;
+
+        try {
+          const cred = await signInWithEmailAndPassword(auth, 'admin@chronosabc.com', '121517');
+          const adminRef = doc(db, 'users', cred.user.uid);
+          const adminSnap = await getDoc(adminRef);
+          if (!adminSnap.exists()) {
+            await setDoc(adminRef, {
               username: 'admin',
               role: 'ADMIN',
               name: 'Administrador Principal',
               isActive: true,
+              hasBiometric: false,
               createdAt: serverTimestamp(),
               updatedAt: serverTimestamp()
             });
-          } catch(err) {
-            console.error("Bootstrap error:", err);
+          }
+        } catch (e: any) {
+          if (e?.code === 'auth/user-not-found' || e?.code === 'auth/invalid-credential') {
+            try {
+              const userCredential = await createUserWithEmailAndPassword(auth, 'admin@chronosabc.com', '121517');
+              await setDoc(doc(db, 'users', userCredential.user.uid), {
+                username: 'admin',
+                role: 'ADMIN',
+                name: 'Administrador Principal',
+                isActive: true,
+                hasBiometric: false,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+              });
+            } catch (err: any) {
+              if (err?.code !== 'auth/email-already-in-use') {
+                console.error("Bootstrap error:", err);
+              }
+            }
           }
         }
+      } catch {
+        // Ignore bootstrap check failures when offline or unconfigured
       }
     };
     

@@ -60,7 +60,10 @@ function dayKey(d: Date): string {
 }
 
 interface IncomingPunch {
+  /** Número del usuario en el reloj (se mapea a Chronos), o vacío si viene userId. */
   deviceUserId: string;
+  /** ID directo del usuario en Chronos (agente del lector USB 2Connect). */
+  userId?: string;
   timestamp: Date;
   deviceSerial: string;
 }
@@ -72,8 +75,17 @@ function parsePunches(body: any): { punches: IncomingPunch[]; errors: string[] }
   const list = Array.isArray(body?.punches) ? body.punches : [];
   if (list.length > MAX_BATCH) errors.push(`Máximo ${MAX_BATCH} ponches por envío.`);
   for (const p of list.slice(0, MAX_BATCH)) {
-    const id = String(p?.deviceUserId ?? "").trim();
     const ts = new Date(p?.timestamp);
+    const directUser = typeof p?.userId === "string" ? p.userId.trim() : "";
+    if (directUser) {
+      if (!/^[A-Za-z0-9_-]{1,128}$/.test(directUser) || isNaN(ts.getTime())) {
+        errors.push(`Ponche inválido: ${JSON.stringify(p)}`);
+        continue;
+      }
+      out.push({ deviceUserId: "", userId: directUser, timestamp: ts, deviceSerial: serial });
+      continue;
+    }
+    const id = String(p?.deviceUserId ?? "").trim();
     if (!/^[0-9]{1,12}$/.test(id) || isNaN(ts.getTime())) {
       errors.push(`Ponche inválido: ${JSON.stringify(p)}`);
       continue;
@@ -130,15 +142,23 @@ export function registerClockRoutes(app: Express) {
       let duplicates = 0;
       const unknown = new Set<string>();
 
+      const directCache = new Map<string, boolean>();
+      const userExists = async (uid: string): Promise<boolean> => {
+        if (!directCache.has(uid)) directCache.set(uid, (await db.collection("users").doc(uid).get()).exists);
+        return directCache.get(uid)!;
+      };
+
       for (const p of punches) {
-        const userId = await resolveUser(p.deviceUserId);
+        const userId = p.userId
+          ? ((await userExists(p.userId)) ? p.userId : null)
+          : await resolveUser(p.deviceUserId);
         if (!userId) {
-          unknown.add(p.deviceUserId);
+          unknown.add(p.userId || p.deviceUserId);
           continue;
         }
         const day = dayKey(p.timestamp);
         await loadDay(day, p.timestamp);
-        const docId = `clk_${p.deviceSerial}_${p.deviceUserId}_${Math.floor(p.timestamp.getTime() / 1000)}`;
+        const docId = `clk_${p.deviceSerial}_${p.userId || p.deviceUserId}_${Math.floor(p.timestamp.getTime() / 1000)}`;
         const ref = db.collection("ponches").doc(docId);
         if ((await ref.get()).exists) {
           duplicates++;
@@ -151,7 +171,7 @@ export function registerClockRoutes(app: Express) {
           userId,
           type,
           timestamp: Timestamp.fromDate(p.timestamp),
-          notes: "Reloj biométrico",
+          notes: p.userId ? "Lector USB 2Connect" : "Reloj biométrico",
         });
         dayCounts.set(key, n + 1);
         saved++;
@@ -171,6 +191,25 @@ export function registerClockRoutes(app: Express) {
     } catch (err) {
       console.error("clock ingest error", err);
       res.status(500).json({ ok: false, error: "Error interno al guardar ponches." });
+    }
+  });
+
+  // Huellas registradas (lector USB 2Connect) para identificación 1:N en el agente local.
+  app.get("/api/clock/templates", requireApiKey, async (_req: Request, res: Response) => {
+    try {
+      const snap = await getAdminFirestore().collection("users").get();
+      const templates = snap.docs
+        .map((d) => ({ id: d.id, data: d.data() }))
+        .filter(({ data }) => typeof data.usbFingerprint === "string" && data.usbFingerprint && data.isActive !== false)
+        .map(({ id, data }) => ({
+          userId: id,
+          name: typeof data.name === "string" ? data.name : id,
+          template: data.usbFingerprint as string,
+        }));
+      res.json({ ok: true, templates });
+    } catch (err) {
+      console.error("clock templates error", err);
+      res.status(500).json({ ok: false, error: "Error interno." });
     }
   });
 

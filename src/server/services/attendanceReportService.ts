@@ -1,11 +1,11 @@
 import type { DocumentData, Firestore, Timestamp } from "firebase-admin/firestore";
-import { getAdminFirestore } from "../firebaseAdmin";
+import { getAdminFirestore } from "../firebaseAdmin.ts";
 import {
   getPunctualTimeLimit,
   getReportTimezone,
-} from "../config/reportEnv";
-import { buildPunctualityReportHtml } from "../templates/punctualityReportHtml";
-import { sendAttendanceReportEmail } from "./mailService";
+} from "../config/reportEnv.ts";
+import { buildPunctualityReportHtml } from "../templates/punctualityReportHtml.ts";
+import { sendAttendanceReportEmail } from "./mailService.ts";
 import {
   formatDateInZone,
   formatTimeInZone,
@@ -14,7 +14,7 @@ import {
   parseTimeLimitToMinutes,
   startOfLocalDayUtc,
   todayDateKey,
-} from "../utils/timezone";
+} from "../utils/timezone.ts";
 
 export type ReportEmployeeRow = {
   id: string;

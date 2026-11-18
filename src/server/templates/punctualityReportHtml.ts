@@ -1,4 +1,4 @@
-import type { AttendanceReportPayload } from "../services/attendanceReportService";
+import type { AttendanceReportPayload } from "../services/attendanceReportService.ts";
 
 function escapeHtml(value: string): string {
   return value

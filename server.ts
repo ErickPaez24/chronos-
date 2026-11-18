@@ -1,11 +1,10 @@
 import 'dotenv/config';
 import express from 'express';
-import { createServer as createViteServer } from 'vite';
 import archiver from 'archiver';
 import path from 'path';
-import { registerMasterPinRoutes } from './src/server/masterPinLoginApi';
-import { bootstrapAttendanceReports, registerReportRoutes } from './src/server/reportRoutes';
-import { registerClockRoutes } from './src/server/clockRoutes';
+import { registerMasterPinRoutes } from './src/server/masterPinLoginApi.ts';
+import { bootstrapAttendanceReports, registerReportRoutes } from './src/server/reportRoutes.ts';
+import { registerClockRoutes } from './src/server/clockRoutes.ts';
 
 async function startServer() {
   const app = express();
@@ -36,6 +35,7 @@ async function startServer() {
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== 'production') {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',

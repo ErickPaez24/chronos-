@@ -1,6 +1,6 @@
-import { todayDateKey } from "../../shared/utils/dateKey";
+import { todayDateKey } from "../../shared/utils/dateKey.ts";
 
-export { todayDateKey } from "../../shared/utils/dateKey";
+export { todayDateKey } from "../../shared/utils/dateKey.ts";
 
 export function formatDateInZone(date: Date, timeZone: string): string {
   return new Intl.DateTimeFormat("es-DO", {

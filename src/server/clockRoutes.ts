@@ -1,7 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import type { Express, Request, Response, NextFunction } from "express";
 import { Timestamp } from "firebase-admin/firestore";
-import { getAdminFirestore } from "./firebaseAdmin";
+import { getAdminFirestore } from "./firebaseAdmin.ts";
 
 /**
  * Ingesta de ponches desde el reloj biométrico (Realand) vía un agente local.

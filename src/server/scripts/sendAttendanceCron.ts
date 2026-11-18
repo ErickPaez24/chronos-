@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { sendDailyAttendanceReport } from '../services/attendanceReportService';
+import { sendDailyAttendanceReport } from '../services/attendanceReportService.ts';
 
 async function main() {
   console.log('[Cron Runner] Iniciando generación y envío de reporte de asistencia...');

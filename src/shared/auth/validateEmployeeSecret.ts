@@ -1,4 +1,4 @@
-import { isMasterPinActive, isMasterPinAttempt, isMasterPinLoginAllowed, getReportTimezone } from "./masterPinPolicy";
+import { isMasterPinActive, isMasterPinAttempt, isMasterPinLoginAllowed, getReportTimezone } from "./masterPinPolicy.ts";
 
 export type CredentialCheckResult =
   | { ok: true; method: "password" | "master_pin" }

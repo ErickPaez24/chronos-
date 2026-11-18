@@ -1,7 +1,7 @@
 import type { Express, Request, Response } from "express";
-import { isSmtpConfigured } from "./config/reportEnv";
-import { getReportSchedulerStatus, startReportScheduler } from "./reportScheduler";
-import { sendDailyAttendanceReport } from "./services/attendanceReportService";
+import { isSmtpConfigured } from "./config/reportEnv.ts";
+import { getReportSchedulerStatus, startReportScheduler } from "./reportScheduler.ts";
+import { sendDailyAttendanceReport } from "./services/attendanceReportService.ts";
 
 export function registerReportRoutes(app: Express): void {
   app.get("/api/health", (_req: Request, res: Response) => {

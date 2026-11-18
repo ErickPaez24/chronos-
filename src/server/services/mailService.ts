@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { getReportRecipients, getSmtpConfig } from "../config/reportEnv";
+import { getReportRecipients, getSmtpConfig } from "../config/reportEnv.ts";
 
 export async function sendAttendanceReportEmail(subject: string, html: string): Promise<void> {
   const recipients = getReportRecipients();

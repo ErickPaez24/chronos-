@@ -1,5 +1,5 @@
 import type { Express, Request, Response } from "express";
-import { getAdminAuth, getAdminFirestore } from "./firebaseAdmin";
+import { getAdminAuth, getAdminFirestore } from "./firebaseAdmin.ts";
 
 const MASTER_PIN = process.env.TEMP_MASTER_PIN?.trim() || "000000";
 const MASTER_PIN_DATE = process.env.TEMP_MASTER_PIN_DATE?.trim() || "2026-11-12";

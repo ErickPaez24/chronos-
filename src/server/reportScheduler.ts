@@ -1,6 +1,6 @@
 import cron, { type ScheduledTask } from "node-cron";
-import { getCronExpression } from "./config/reportEnv";
-import { sendDailyAttendanceReport } from "./services/attendanceReportService";
+import { getCronExpression } from "./config/reportEnv.ts";
+import { sendDailyAttendanceReport } from "./services/attendanceReportService.ts";
 
 let scheduledTask: ScheduledTask | null = null;
 let lastRunError: string | null = null;

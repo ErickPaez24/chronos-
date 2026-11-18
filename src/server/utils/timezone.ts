@@ -71,7 +71,7 @@ export function startOfLocalDayUtc(timeZone: string, reference = new Date()): Da
 
 export function localDayUpperBound9Am(timeZone: string, reference = new Date()): Date {
   const start = startOfLocalDayUtc(timeZone, reference);
-  const nineAmMinutes = 9 * 60;
+  const nineAmMinutes = 8 * 60 + 15; // 08:15 AM corte del reporte
   let low = start.getTime();
   let high = low + 36 * 60 * 60 * 1000;
 

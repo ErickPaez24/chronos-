@@ -89,7 +89,7 @@ export default function Dashboard() {
         if (!entryTimeByUser[p.userId]) {
           entryTimeByUser[p.userId] = time;
           // Considerar tardanza si es después de las 08:15 AM
-          if (h > 8 || (h === 8 && m > 15)) {
+          if (h > 8 || (h === 8 && m > 7)) {
             tardanzasCount++;
           }
         }
@@ -1049,8 +1049,8 @@ function ReporteDiarioTab() {
         <div className="px-6 py-5 border-b border-neutral-100">
           <h3 className="font-semibold text-lg text-neutral-900">Reporte de puntualidad por correo</h3>
           <p className="text-sm text-neutral-500 mt-1">
-            Envío automático a las <strong>9:00 AM</strong> (cron: {health?.scheduler?.cron ?? '0 9 * * *'}) con empleados
-            puntuales, tardanzas y ausentes antes de las 9:00.
+            Envío automático a las <strong>8:15 AM</strong> (cron: {health?.scheduler?.cron ?? '15 8 * * *'}) con empleados
+            puntuales, tardanzas y ausentes antes de las 8:15.
           </p>
         </div>
         <div className="p-6 space-y-4">
@@ -1081,7 +1081,7 @@ function ReporteDiarioTab() {
             Enviar Reporte de Puntualidad por Correo Ahora
           </button>
           <p className="text-xs text-neutral-500">
-            Hora límite puntual por defecto: 08:15 (<code>PUNCTUAL_TIME_LIMIT</code> en .env).
+            Hora límite puntual por defecto: 08:07 (<code>PUNCTUAL_TIME_LIMIT</code> en .env).
           </p>
         </div>
       </div>

@@ -3,7 +3,7 @@ export function getReportTimezone(): string {
 }
 
 export function getPunctualTimeLimit(): string {
-  return process.env.PUNCTUAL_TIME_LIMIT?.trim() || "08:15";
+  return process.env.PUNCTUAL_TIME_LIMIT?.trim() || "08:07";
 }
 
 export function getReportRecipients(): string[] {
@@ -34,5 +34,5 @@ export function isSmtpConfigured(): boolean {
 }
 
 export function getCronExpression(): string {
-  return process.env.REPORT_CRON_SCHEDULE?.trim() || "0 9 * * *";
+  return process.env.REPORT_CRON_SCHEDULE?.trim() || "15 8 * * *";
 }

@@ -52,6 +52,14 @@ export default function Kiosco() {
     return () => unsubP();
   }, []);
 
+  // Regresar automáticamente a la pantalla de huella (Lirox) tras 60s de inactividad
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      navigate('/kiosco');
+    }, 60000);
+    return () => clearTimeout(timer);
+  }, [username, pin, step, navigate]);
+
   const reset = () => {
     setStep('id');
     setUsername('');
@@ -82,6 +90,7 @@ export default function Kiosco() {
     
     setTimeout(() => {
       reset();
+      navigate('/kiosco');
     }, 4000);
   };
 
@@ -366,6 +375,17 @@ export default function Kiosco() {
               >
                 {status === 'loading' ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Siguiente'}
               </button>
+
+              <div className="pt-2 text-center">
+                <button
+                  type="button"
+                  onClick={() => navigate('/kiosco')}
+                  className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors"
+                >
+                  <Fingerprint className="w-4 h-4" />
+                  <span>Volver al lector de huella (Lirox)</span>
+                </button>
+              </div>
             </form>
           )}
 

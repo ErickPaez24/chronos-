@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Fingerprint, CheckCircle2, XCircle, Loader2, PlugZap } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Fingerprint, CheckCircle2, XCircle, Loader2, PlugZap, KeyRound } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 
@@ -89,6 +90,7 @@ function beep(freq: number, ms: number, times = 1) {
 }
 
 export default function LectorAutomatico() {
+  const navigate = useNavigate();
   const [conn, setConn] = useState<'conectando' | 'ok' | 'sin-servicio'>('conectando');
   const [result, setResult] = useState<{ ok: boolean; text: string; sub?: string } | null>(null);
   const [log, setLog] = useState<LogItem[]>([]);
@@ -249,6 +251,25 @@ export default function LectorAutomatico() {
             </div>
           </>
         )}
+      </div>
+
+      <div className="mt-8 flex flex-col items-center">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate('/kiosco-usuario');
+          }}
+          className="group flex items-center gap-3 px-6 py-3.5 bg-neutral-900/90 hover:bg-neutral-800 text-neutral-200 hover:text-white rounded-2xl font-medium text-base transition-all border border-neutral-800 hover:border-neutral-700 shadow-lg active:scale-95 cursor-pointer"
+        >
+          <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 group-hover:bg-indigo-500/20 transition-colors">
+            <KeyRound className="w-5 h-5" />
+          </div>
+          <div className="text-left">
+            <div className="text-sm font-semibold">Entrar con código o contraseña</div>
+            <div className="text-xs text-neutral-400">Marcar usando tu usuario y PIN</div>
+          </div>
+        </button>
       </div>
 
       <div className="mt-10 w-full max-w-lg text-sm">

@@ -45,7 +45,7 @@ export function buildPunctualityReportHtml(data: AttendanceReportPayload): strin
           <tr>
             <td style="background:linear-gradient(135deg,#0f766e 0%,#115e59 100%);padding:28px 24px;color:#ffffff;">
               <div style="font-size:13px;opacity:0.9;text-transform:uppercase;letter-spacing:0.06em;">Chronos · Kiosko</div>
-              <h1 style="margin:12px 0 8px;font-size:22px;font-weight:700;line-height:1.3;">Reporte Diario de Puntualidad y Asistencia — 9:00 AM</h1>
+              <h1 style="margin:12px 0 8px;font-size:22px;font-weight:700;line-height:1.3;">Reporte Diario de Puntualidad y Asistencia — 8:15 AM</h1>
               <p style="margin:0;font-size:15px;opacity:0.95;">${escapeHtml(dateLabel)}</p>
               <p style="margin:8px 0 0;font-size:12px;opacity:0.85;">Hora límite puntual: ${escapeHtml(punctualLimitLabel)} · Generado: ${escapeHtml(generatedAtLabel)}</p>
             </td>
@@ -122,7 +122,7 @@ export function buildPunctualityReportHtml(data: AttendanceReportPayload): strin
                     <tr>
                       <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;">${escapeHtml(r.name)}</td>
                       <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;">${escapeHtml(r.roleOrUsername)}</td>
-                      <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;color:#b91c1c;">Sin registro antes de las 9:00 AM</td>
+                      <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;color:#b91c1c;">Sin registro antes de las 8:15 AM</td>
                     </tr>`,
                           ),
                         ].join("")

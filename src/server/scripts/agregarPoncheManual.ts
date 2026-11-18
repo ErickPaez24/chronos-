@@ -2,7 +2,7 @@
  * Agrega un ponche manual (p. ej. cuando el empleado aún no tiene la huella registrada).
  *
  * Uso:
- *   npx tsx src/server/scripts/agregarPoncheManual.ts "Juan Carlos Luna" 2026-11-18 07:51 ENTRADA
+ *   npx tsx src/server/scripts/agregarPoncheManual.ts jluna 2026-11-18 07:51 ENTRADA
  *
  * Requiere FIREBASE_SERVICE_ACCOUNT_PATH (o FIREBASE_SERVICE_ACCOUNT_JSON) como el servidor.
  * La hora se interpreta en REPORT_TIMEZONE (por defecto America/Santo_Domingo, UTC-4).
@@ -20,7 +20,7 @@ function normalizar(s: string) {
 async function main() {
   const [nombre, fecha, hora, tipo = "ENTRADA"] = process.argv.slice(2);
   if (!nombre || !/^\d{4}-\d{2}-\d{2}$/.test(fecha ?? "") || !/^\d{1,2}:\d{2}$/.test(hora ?? "")) {
-    console.error('Uso: npx tsx src/server/scripts/agregarPoncheManual.ts "Nombre" AAAA-MM-DD HH:mm [TIPO]');
+    console.error('Uso: npx tsx src/server/scripts/agregarPoncheManual.ts "usuario o nombre" AAAA-MM-DD HH:mm [TIPO]');
     process.exit(1);
   }
   if (!TIPOS.includes(tipo)) {
@@ -37,7 +37,11 @@ async function main() {
   const db = getAdminFirestore();
   const snap = await db.collection("users").get();
   const buscado = normalizar(nombre);
-  const coincidencias = snap.docs.filter((d) => normalizar(String(d.data().name ?? "")).includes(buscado));
+  // Primero por usuario exacto (p. ej. "jluna"); si no, por nombre.
+  const porUsuario = snap.docs.filter((d) => normalizar(String(d.data().username ?? "")) === buscado);
+  const coincidencias = porUsuario.length
+    ? porUsuario
+    : snap.docs.filter((d) => normalizar(String(d.data().name ?? "")).includes(buscado));
 
   if (coincidencias.length !== 1) {
     console.error(

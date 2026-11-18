@@ -138,7 +138,7 @@ func ask(label, current string) string {
 func askConfig(cfg *Config) *Config {
 	fmt.Println("\n== Configuración ==  (Enter = dejar el valor actual)")
 	for {
-		cfg.ServerURL = strings.TrimRight(ask("URL del servidor Chronos (ej. https://mi-chronos.run.app)", cfg.ServerURL), "/")
+		cfg.ServerURL = strings.TrimRight(ask("URL del servidor Chronos (ej. https://chronos-abc.ai.studio)", cfg.ServerURL), "/")
 		cfg.APIKey = ask("Clave del agente (CLOCK_API_KEY del servidor)", cfg.APIKey)
 		cfg.ReaderURL = ask("Dirección del servicio 2Connect", cfg.ReaderURL)
 		cfg.DeviceName = ask("Nombre de este lector", cfg.DeviceName)

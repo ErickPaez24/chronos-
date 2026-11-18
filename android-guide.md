@@ -64,7 +64,7 @@ class MainActivity : FragmentActivity() {
         webView.addJavascriptInterface(WebAppInterface(this, webView), "AndroidAuth")
 
         // URL COMPLETA DEL KIOSCO EN TU APLICACIÓN:
-        webView.loadUrl("https://ais-pre-wdqu7vmt3vygkynajfddna-82735450891.us-east5.run.app/kiosco") 
+        webView.loadUrl("https://chronos-abc.ai.studio/kiosco") 
     }
 
     class WebAppInterface(private val activity: FragmentActivity, private val webView: WebView) {

@@ -46,7 +46,7 @@ function createWindow () {
   });
 
   // Aquí ponemos la URL pública de tu Kiosco
-  mainWindow.loadURL('https://ais-pre-wdqu7vmt3vygkynajfddna-82735450891.us-east5.run.app/kiosco');
+  mainWindow.loadURL('https://chronos-abc.ai.studio/kiosco');
 }
 
 app.whenReady().then(createWindow);

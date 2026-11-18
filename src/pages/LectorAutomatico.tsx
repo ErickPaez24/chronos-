@@ -266,8 +266,8 @@ export default function LectorAutomatico() {
             <KeyRound className="w-5 h-5" />
           </div>
           <div className="text-left">
-            <div className="text-sm font-semibold">Entrar con código o contraseña</div>
-            <div className="text-xs text-neutral-400">Marcar usando tu usuario y PIN</div>
+            <div className="text-base font-bold">Ingresar con PIN</div>
+            <div className="text-xs text-neutral-400">Por si no deseas poner el dedo</div>
           </div>
         </button>
       </div>
